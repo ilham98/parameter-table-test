@@ -19,7 +19,7 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.12);
         }
 
-        .tag {
+        .parameter {
             display: inline-flex;
             align-items: center;
             background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
@@ -32,12 +32,12 @@
             box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
         }
 
-        .tag .tag-type {
+        .parameter .parameter-type {
             font-weight: 600;
             opacity: 0.9;
         }
 
-        .tag .tag-label {
+        .parameter .parameter-label {
             font-weight: 400;
         }
 
@@ -99,25 +99,25 @@
 
         <div v-if="showSummary && templateLoaded" class="card mb-3">
             <div class="card-body">
-                <h5 class="card-title">📋 Summary Tags List</h5>
+                <h5 class="card-title">📋 Summary Parameters</h5>
                 <div v-if="summaryItems.length === 0" class="text-center text-muted fst-italic py-3">
-                    No summary tags found. Add tags to cells to see them here.
+                    No summary parameters found. Add parameters to cells to see them here.
                 </div>
                 <div v-else>
-                    <div v-for="(item, index) in summaryItems" :key="index" class="card mb-2">
-                        <div class="card-body py-2">
-                            <div class="text-muted small mb-1">
-                                <strong>Row {{ item.row }}</strong> | <strong>{{ item.column }}</strong>
-                            </div>
-                            <div class="mb-1">
-                                <div class="tag">
-                                    <span class="tag-type">Summary:</span>
-                                    <span class="tag-label">{{ item.label }}</span>
-                                </div>
-                            </div>
-                            <div v-if="item.value" class="text-secondary small">Value: {{ item.value }}</div>
-                        </div>
-                    </div>
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 50%;">Label</th>
+                                <th style="width: 50%;">Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(item, index) in summaryItems" :key="index">
+                                <td><strong>{{ item.label }}</strong></td>
+                                <td>{{ item.value || '-' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -143,10 +143,10 @@
                             :colspan="cell.colspan || 1"
                             :rowspan="cell.rowspan || 1">
                             <div class="cell-wrapper">
-                                <div class="tags-container">
-                                    <div v-if="cell.tag" class="tag">
-                                        <span class="tag-type">Summary:</span>
-                                        <span class="tag-label">{{ cell.tag.label }}</span>
+                                <div class="parameters-container">
+                                    <div v-if="cell.parameter" class="parameter">
+                                        <span class="parameter-type">Parameter :</span>
+                                        <span class="parameter-label">{{ cell.parameter.label }}</span>
                                     </div>
                                 </div>
                                 
@@ -212,13 +212,13 @@
                     const items = [];
                     this.tableRows.forEach((row, rowIndex) => {
                         row.forEach((cell, colIndex) => {
-                            if (cell.tag && !cell.hidden) {
+                            if (cell.parameter && !cell.hidden) {
                                 const headerRow = this.headerRows[this.headerRows.length - 1];
                                 const columnName = headerRow[colIndex] ? headerRow[colIndex].value : `Column ${colIndex + 1}`;
                                 items.push({
                                     row: rowIndex + 1,
                                     column: columnName,
-                                    label: cell.tag.label,
+                                    label: cell.parameter.label,
                                     value: cell.value
                                 });
                             }
@@ -272,7 +272,7 @@
                             placeholder: cell.placeholder || '',
                             placeholderText: cell.placeholderText || '',  // Preserve placeholder text
                             type: cell.type || 'text',  // Preserve cell type
-                            tag: cell.tag || null,  // Preserve tags from template
+                            parameter: cell.parameter || cell.tag || null,  // Preserve parameters from template (with backward compatibility for tag)
                             merged: cell.merged || false,
                             hidden: cell.hidden || false,
                             colspan: cell.colspan || 1,
@@ -318,7 +318,7 @@
                                 type: cell.type,
                                 placeholder: cell.placeholder,
                                 placeholderText: cell.placeholderText,
-                                tag: cell.tag,
+                                parameter: cell.parameter,
                                 merged: cell.merged,
                                 hidden: cell.hidden,
                                 colspan: cell.colspan,
@@ -363,7 +363,7 @@
                             dataRow.forEach((cellData, colIndex) => {
                                 if (colIndex < this.tableRows[rowIndex].length) {
                                     this.tableRows[rowIndex][colIndex].value = cellData.value || '';
-                                    this.tableRows[rowIndex][colIndex].tag = cellData.tag || null;
+                                    this.tableRows[rowIndex][colIndex].parameter = cellData.parameter || cellData.tag || null;
                                     // Preserve type and placeholder properties if they exist in imported data
                                     if (cellData.type) {
                                         this.tableRows[rowIndex][colIndex].type = cellData.type;
@@ -402,8 +402,8 @@
                                     ? (cell.placeholderText || '')
                                     : (cell.value || '');
                                     
-                                if (cell.tag) {
-                                    value += ` [${cell.tag.type}: ${cell.tag.label}]`;
+                                if (cell.parameter) {
+                                    value += ` [${cell.parameter.type}: ${cell.parameter.label}]`;
                                 }
                                 return value.includes(',') ? `"${value.replace(/"/g, '""')}"` : value;
                             });
@@ -421,7 +421,7 @@
                     printContent += '<style>table { border-collapse: collapse; width: 100%; }';
                     printContent += 'th, td { border: 1px solid black; padding: 8px; text-align: left; }';
                     printContent += 'th { background-color: #6366f1; color: white; }';
-                    printContent += '.tag { display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin: 2px; }';
+                    printContent += '.parameter { display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin: 2px; }';
                     printContent += '</style></head><body>';
                     printContent += '<h1>Table Data</h1><table><thead>';
                     
@@ -439,8 +439,8 @@
                         printContent += '<tr>';
                         row.filter(c => !c.hidden).forEach(cell => {
                             let cellContent = cell.value || '';
-                            if (cell.tag) {
-                                cellContent += `<br><span class="tag">${cell.tag.type}: ${cell.tag.label}</span>`;
+                            if (cell.parameter) {
+                                cellContent += `<br><span class="parameter">${cell.parameter.type}: ${cell.parameter.label}</span>`;
                             }
                             printContent += `<td>${cellContent}</td>`;
                         });
