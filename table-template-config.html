@@ -323,7 +323,7 @@
                                    placeholder="Enter header name" 
                                    class="form-control form-control-sm">
                         </th>
-                        <th class="table-secondary action-cell">
+                        <th class="table-secondary action-cell" v-if="rowIndex == 0 && rowIndex != headerRows.length - 1" rowspan="99">
                             <div class="d-flex justify-content-center">
                                 <div class="add-col-btn" @click="addColumn">+</div>
                             </div>
@@ -340,11 +340,6 @@
                         <th :colspan="headerRows[0].length" class="action-cell">
                             <div class="d-flex justify-content-center">
                                 <div class="add-header-row-btn" @click="addHeaderRow">+</div>
-                            </div>
-                        </th>
-                        <th class="table-secondary action-cell">
-                            <div class="d-flex justify-content-center">
-                                <div class="add-col-btn" @click="addColumn">+</div>
                             </div>
                         </th>
                         <th class="table-secondary action-cell"></th>
@@ -394,7 +389,7 @@
                                 </button>
                             </div>
                         </td>
-                        <td class="table-secondary action-cell">
+                        <td class="table-secondary action-cell" v-if="rowIndex == 0 && rowIndex != headerRows.length - 1"  rowspan="99">
                             <div class="d-flex justify-content-center">
                                 <div class="add-col-btn" @click="addColumn">+</div>
                             </div>
@@ -411,11 +406,6 @@
                         <td :colspan="headerRows[0].length" class="action-cell">
                             <div class="d-flex justify-content-center">
                                 <div class="add-row-btn" @click="addRow">+</div>
-                            </div>
-                        </td>
-                        <td class="table-secondary action-cell">
-                            <div class="d-flex justify-content-center">
-                                <div class="add-col-btn" @click="addColumn">+</div>
                             </div>
                         </td>
                         <td class="table-secondary action-cell"></td>
