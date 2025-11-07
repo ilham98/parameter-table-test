@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parameter Table Test - Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .menu-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            padding: 50px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .menu-title {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #6366f1;
+            font-weight: bold;
+        }
+
+        .menu-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            color: inherit;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+            border-color: #6366f1;
+        }
+
+        .menu-card-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .menu-card-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1f2937;
+        }
+
+        .menu-card-description {
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .menu-card-1:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+        }
+
+        .menu-card-2:hover {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #6b7280;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-container">
+        <h1 class="menu-title">📊 Parameter Table Test</h1>
+        <p class="text-center text-muted mb-4">Choose an option to get started</p>
+
+        <a href="table-template-config.html" class="menu-card menu-card-1">
+            <span class="menu-card-icon">📐</span>
+            <div class="menu-card-title">Table Template Configuration</div>
+            <div class="menu-card-description">
+                Configure the table structure, headers, merge cells, and tag cells that need summary or special attention. Create reusable templates with custom cell types (text, number, select, placeholder).
+            </div>
+        </a>
+
+        <a href="table-data-entry.html" class="menu-card menu-card-2">
+            <span class="menu-card-icon">✍️</span>
+            <div class="menu-card-title">Table Data Entry</div>
+            <div class="menu-card-description">
+                Fill in data based on a loaded template structure. Import templates, enter data, view summary tags, and export to JSON or CSV. Perfect for data collection workflows.
+            </div>
+        </a>
+
+        <div class="footer">
+            Parameter Table Test Application v1.0
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
