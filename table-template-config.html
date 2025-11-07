@@ -300,8 +300,12 @@
                                 ×
                             </div>
                         </th>
+                        <th class="table-secondary action-cell" :rowspan="headerRows.length + 1 + tableRows.length + 1">
+                            <div class="d-flex justify-content-center align-items-center h-100">
+                                <div class="add-col-btn" @click="addColumn">+</div>
+                            </div>
+                        </th>
                         <th class="table-secondary action-cell" style="width: 100px;">Actions</th>
-                        <th class="table-secondary action-cell"></th>
                     </tr>
                     
                     <!-- Header Rows -->
@@ -380,16 +384,17 @@
                                 </button>
                             </div>
                         </td>
+                        <td class="table-secondary action-cell" :rowspan="headerRows.length + 1 + tableRows.length + 1">
+                            <div class="d-flex justify-content-center align-items-center h-100">
+                                <div class="add-col-btn" @click="addColumn">+</div>
+                            </div>
+                        </td>
                         <td class="table-secondary action-cell">
                             <div class="d-flex justify-content-center">
                                 <button @click="deleteRow(rowIndex)" class="btn btn-danger btn-sm">Delete Row</button>
                             </div>
                         </td>
-                        <td v-if="rowIndex === 0" class="action-cell" :rowspan="tableRows.length">
-                            <div class="d-flex justify-content-center align-items-center h-100">
-                                <div class="add-col-btn" @click="addColumn">+</div>
-                            </div>
-                        </td>
+                        
                     </tr>
                     
                     <!-- Add Row -->
@@ -400,7 +405,6 @@
                             </div>
                         </td>
                         <td class="table-secondary action-cell"></td>
-                        <td class="action-cell"></td>
                     </tr>
                 </tbody>
             </table>
