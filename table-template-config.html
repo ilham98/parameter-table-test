@@ -773,9 +773,22 @@
                         return;
                     }
                     
+                    // Check if this column is part of a merged cell
+                    const header = this.headerRows[0][colIndex];
+                    let affectedColumns = [colIndex];
+                    
+                    if (header.merged && header.colspan > 1) {
+                        // If this is a merged cell, we need to delete all columns it spans
+                        for (let i = 1; i < header.colspan; i++) {
+                            affectedColumns.push(colIndex + i);
+                        }
+                    }
+                    
                     Swal.fire({
                         title: 'Delete Column?',
-                        text: 'Are you sure you want to delete this column? This will remove all data in this column.',
+                        text: header.merged && header.colspan > 1 
+                            ? `This will delete ${affectedColumns.length} column(s) (merged cell spans ${header.colspan} columns). Continue?`
+                            : 'Are you sure you want to delete this column? This will remove all data in this column.',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#ef4444',
@@ -784,12 +797,17 @@
                         cancelButtonText: 'Cancel'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            this.headerRows.forEach(headerRow => {
-                                headerRow.splice(colIndex, 1);
-                            });
+                            // Delete columns from highest index to lowest to avoid index shifting issues
+                            affectedColumns.sort((a, b) => b - a).forEach(idx => {
+                                // Delete from all header rows
+                                this.headerRows.forEach(headerRow => {
+                                    headerRow.splice(idx, 1);
+                                });
 
-                            this.tableRows.forEach(row => {
-                                row.splice(colIndex, 1);
+                                // Delete from all data rows
+                                this.tableRows.forEach(row => {
+                                    row.splice(idx, 1);
+                                });
                             });
                             
                             this.saveState();
