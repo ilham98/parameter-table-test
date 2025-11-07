@@ -94,10 +94,6 @@
         }
 
         .add-row-btn {
-            position: absolute;
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
             width: 30px;
             height: 30px;
             border-radius: 50%;
@@ -111,18 +107,15 @@
             justify-content: center;
             font-size: 18px;
             font-weight: bold;
-            z-index: 10;
             transition: all 0.2s;
         }
 
         .add-row-btn:hover {
-            transform: translateX(-50%) scale(1.1);
+            transform: scale(1.1);
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.6);
         }
 
         .add-col-btn {
-            position: absolute;
-            right: -15px;
             width: 30px;
             height: 30px;
             border-radius: 50%;
@@ -136,7 +129,6 @@
             justify-content: center;
             font-size: 18px;
             font-weight: bold;
-            z-index: 10;
             transition: all 0.2s;
         }
 
@@ -146,10 +138,6 @@
         }
 
         .add-header-row-btn {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: -15px;
             width: 30px;
             height: 30px;
             border-radius: 50%;
@@ -163,20 +151,15 @@
             justify-content: center;
             font-size: 18px;
             font-weight: bold;
-            z-index: 10;
             transition: all 0.2s;
         }
 
         .add-header-row-btn:hover {
-            transform: translateX(-50%) scale(1.1);
+            transform: scale(1.1);
             box-shadow: 0 4px 12px rgba(245, 158, 11, 0.6);
         }
 
         .delete-col-btn {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            top: -15px;
             width: 20px;
             height: 20px;
             border-radius: 50%;
@@ -190,22 +173,27 @@
             justify-content: center;
             font-size: 12px;
             font-weight: bold;
-            z-index: 10;
             transition: all 0.2s;
         }
 
         .delete-col-btn:hover {
-            transform: translateX(-50%) scale(1.15);
+            transform: scale(1.15);
             box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
         }
 
         .table-responsive {
             position: relative;
-            overflow: visible !important;
         }
 
         table {
             position: relative;
+        }
+        
+        .action-cell {
+            background-color: #f3f4f6 !important;
+            text-align: center;
+            vertical-align: middle;
+            padding: 8px;
         }
     </style>
 </head>
@@ -300,6 +288,23 @@
         <div class="table-responsive mt-3">
             <table class="table table-bordered table-hover">
                 <thead class="table-primary">
+                    <!-- Delete Column Row -->
+                    <tr>
+                        <th v-for="(header, colIndex) in headerRows[0]" 
+                            :key="'delete-' + colIndex"
+                            v-if="!header.hidden"
+                            class="action-cell">
+                            <div class="delete-col-btn" 
+                                 @click="deleteColumn(colIndex)"
+                                 title="Delete this column">
+                                ×
+                            </div>
+                        </th>
+                        <th class="table-secondary action-cell" style="width: 100px;">Actions</th>
+                        <th class="table-secondary action-cell"></th>
+                    </tr>
+                    
+                    <!-- Header Rows -->
                     <tr v-for="(headerRow, rowIndex) in headerRows" :key="'header-' + rowIndex">
                         <th v-for="(header, colIndex) in headerRow" 
                             :key="'header-' + rowIndex + '-' + colIndex"
@@ -307,30 +312,28 @@
                             :colspan="header.colspan || 1"
                             :rowspan="header.rowspan || 1"
                             :class="{ 'selectable': true, 'selected': isHeaderSelected(rowIndex, colIndex) }"
-                            @click="handleHeaderClick(rowIndex, colIndex, $event)"
-                            style="position: relative;">
-                            <div v-if="rowIndex === 0" 
-                                 class="delete-col-btn" 
-                                 @click.stop="deleteColumn(colIndex)"
-                                 title="Delete this column">
-                                ×
-                            </div>
+                            @click="handleHeaderClick(rowIndex, colIndex, $event)">
                             <input type="text" 
                                    v-model="header.value" 
                                    @input="onHeaderInput(rowIndex, colIndex)"
                                    placeholder="Enter header name" 
                                    class="form-control form-control-sm">
-                            <div v-if="rowIndex === headerRows.length - 1 && colIndex === Math.floor(headerRow.length / 2)" 
-                                 class="add-header-row-btn" 
-                                 @click.stop="addHeaderRow">
-                                +
-                            </div>
                         </th>
-                        <th class="table-secondary" style="width: 120px;">
+                        <th class="table-secondary action-cell">
                             <div class="d-flex justify-content-center">
-                                <button @click="deleteHeaderRow(rowIndex)" class="btn btn-danger btn-sm">Delete</button>
+                                <button @click="deleteHeaderRow(rowIndex)" class="btn btn-danger btn-sm">Delete Row</button>
                             </div>
                         </th>
+                    </tr>
+                    
+                    <!-- Add Header Row -->
+                    <tr>
+                        <th :colspan="headerRows[0].length" class="action-cell">
+                            <div class="d-flex justify-content-center">
+                                <div class="add-header-row-btn" @click="addHeaderRow">+</div>
+                            </div>
+                        </th>
+                        <th class="table-secondary action-cell"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -341,8 +344,7 @@
                             :colspan="cell.colspan || 1"
                             :rowspan="cell.rowspan || 1"
                             :class="{ 'selectable': true, 'selected': isCellSelected(rowIndex, colIndex) }"
-                            @click="handleCellClick(rowIndex, colIndex, $event)"
-                            style="position: relative;">
+                            @click="handleCellClick(rowIndex, colIndex, $event)">
                             <div class="cell-wrapper">
                                 <div class="parameters-container">
                                     <div v-if="cell.parameter" class="parameter">
@@ -377,23 +379,28 @@
                                     + Parameter
                                 </button>
                             </div>
-                            <div v-if="colIndex === row.length - 1 && rowIndex === Math.floor(tableRows.length / 2)" 
-                                 class="add-col-btn" 
-                                 @click.stop="addColumn"
-                                 :style="{ top: '50%', transform: 'translateY(-50%)' }">
-                                +
-                            </div>
-                            <div v-if="rowIndex === tableRows.length - 1 && colIndex === Math.floor(row.length / 2)" 
-                                 class="add-row-btn" 
-                                 @click.stop="addRow">
-                                +
-                            </div>
                         </td>
-                        <td class="table-secondary">
+                        <td class="table-secondary action-cell">
                             <div class="d-flex justify-content-center">
-                                <button @click="deleteRow(rowIndex)" class="btn btn-danger btn-sm">Delete</button>
+                                <button @click="deleteRow(rowIndex)" class="btn btn-danger btn-sm">Delete Row</button>
                             </div>
                         </td>
+                        <td v-if="rowIndex === 0" class="action-cell" :rowspan="tableRows.length">
+                            <div class="d-flex justify-content-center align-items-center h-100">
+                                <div class="add-col-btn" @click="addColumn">+</div>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Add Row -->
+                    <tr>
+                        <td :colspan="headerRows[0].length" class="action-cell">
+                            <div class="d-flex justify-content-center">
+                                <div class="add-row-btn" @click="addRow">+</div>
+                            </div>
+                        </td>
+                        <td class="table-secondary action-cell"></td>
+                        <td class="action-cell"></td>
                     </tr>
                 </tbody>
             </table>
