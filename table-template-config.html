@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table Template Configuration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+        }
+
+        td.selectable, th.selectable {
+            cursor: pointer;
+            position: relative;
+        }
+
+        td.selected, th.selected {
+            background-color: #ddd6fe !important;
+            border: 2px solid #8b5cf6 !important;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            gap: 5px;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+        }
+
+        .tag .tag-type {
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .tag .tag-label {
+            font-weight: 400;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+
+        .tag-remove:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .cell-type-select {
+            padding: 6px;
+            font-size: 12px;
+        }
+
+        th input {
+            width: 100%;
+            padding: 5px;
+            font-size: 14px;
+        }
+
+        .header-actions {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .header-actions button {
+            padding: 3px 8px;
+            font-size: 11px;
+        }
+
+        .add-row-btn {
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 10;
+            transition: all 0.2s;
+        }
+
+        .add-row-btn:hover {
+            transform: translateX(-50%) scale(1.1);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.6);
+        }
+
+        .add-col-btn {
+            position: absolute;
+            right: -15px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 10;
+            transition: all 0.2s;
+        }
+
+        .add-col-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.6);
+        }
+
+        .add-header-row-btn {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: -15px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 10;
+            transition: all 0.2s;
+        }
+
+        .add-header-row-btn:hover {
+            transform: translateX(-50%) scale(1.1);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.6);
+        }
+
+        .delete-col-btn {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: -15px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 10;
+            transition: all 0.2s;
+        }
+
+        .delete-col-btn:hover {
+            transform: translateX(-50%) scale(1.15);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
+        }
+
+        .table-responsive {
+            position: relative;
+            overflow: visible !important;
+        }
+
+        table {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container my-4 p-4">
+        <h1 class="text-center mb-4">📐 Table Template Configuration</h1>
+        
+        <div class="alert alert-info" role="alert">
+            <strong>Purpose:</strong> Configure the table structure, headers, and tag cells that need summary/special attention. Tags will be preserved when template is loaded in the data entry form.
+        </div>
+
+        <div class="card bg-warning-subtle mb-3">
+            <div class="card-body">
+                <h5 class="card-title text-warning-emphasis">📋 Header Row Controls</h5>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <button @click="toggleHeaderSelection" :class="headerSelectionMode ? 'btn btn-danger btn-sm' : 'btn btn-primary btn-sm'">
+                        {{ headerSelectionMode ? 'Disable Header Selection' : 'Enable Header Selection' }}
+                    </button>
+                    <button @click="mergeHeaderCells" :disabled="!canMergeHeaders" class="btn btn-primary btn-sm">Merge Selected Headers</button>
+                    <button @click="splitHeaderCell" class="btn btn-danger btn-sm" :disabled="!canSplitHeader">Split Header</button>
+                </div>
+                <p class="mb-0 text-warning-emphasis">
+                    <strong>Tip:</strong> Hold Cmd (Mac) or Ctrl (Windows) + Click to select multiple headers without enabling selection mode | Current header rows: <span class="badge bg-warning">{{ headerRows.length }}</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="row g-2 align-items-center mb-3">
+            <div class="col-auto">
+                <label class="form-label mb-0">Initial Rows:</label>
+            </div>
+            <div class="col-auto">
+                <input type="number" v-model.number="initialRows" min="1" max="50" class="form-control form-control-sm">
+            </div>
+            <div class="col-auto">
+                <label class="form-label mb-0">Initial Columns:</label>
+            </div>
+            <div class="col-auto">
+                <input type="number" v-model.number="initialCols" min="1" max="20" class="form-control form-control-sm">
+            </div>
+            <div class="col-auto">
+                <button @click="initializeTable" class="btn btn-success btn-sm">Initialize Table</button>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <button @click="undo" :disabled="!canUndo" class="btn btn-secondary btn-sm" title="Undo (Ctrl+Z)">↶ Undo</button>
+            <button @click="redo" :disabled="!canRedo" class="btn btn-secondary btn-sm" title="Redo (Ctrl+Y)">↷ Redo</button>
+            <button @click="toggleCellSelection" :class="cellSelectionMode ? 'btn btn-danger btn-sm' : 'btn btn-primary btn-sm'">
+                {{ cellSelectionMode ? 'Disable Cell Selection' : 'Enable Cell Selection' }}
+            </button>
+            <button @click="mergeCells" :disabled="!canMergeCells" class="btn btn-primary btn-sm">🔗 Merge Selected Cells</button>
+            <button @click="splitCell" class="btn btn-danger btn-sm" :disabled="!canSplitCell">✂️ Split Cell</button>
+            <button @click="clearTable" class="btn btn-danger btn-sm">🗑️ Clear Table</button>
+        </div>
+
+        <div v-if="cellSelectionMode" class="alert alert-info" role="alert">
+            ℹ️ <strong>Cell Selection Mode Active:</strong> Click cells to select. Hold Cmd (Mac) or Ctrl (Windows) while clicking to select multiple cells.
+        </div>
+        <div v-if="!cellSelectionMode && selectedCells.length > 0" class="alert alert-success" role="alert">
+            ℹ️ <strong>{{ selectedCells.length }} cell(s) selected</strong> via Cmd/Ctrl+Click. Click "Merge Selected Cells" to merge them.
+        </div>
+        <div v-if="!cellSelectionMode && canSplitCell" class="alert alert-warning" role="alert">
+            ℹ️ Click "Split Cell" to unmerge the selected merged cell.
+        </div>
+
+        <div class="table-responsive mt-3">
+            <table class="table table-bordered table-hover">
+                <thead class="table-primary">
+                    <tr v-for="(headerRow, rowIndex) in headerRows" :key="'header-' + rowIndex">
+                        <th v-for="(header, colIndex) in headerRow" 
+                            :key="'header-' + rowIndex + '-' + colIndex"
+                            v-if="!header.hidden"
+                            :colspan="header.colspan || 1"
+                            :rowspan="header.rowspan || 1"
+                            :class="{ 'selectable': true, 'selected': isHeaderSelected(rowIndex, colIndex) }"
+                            @click="handleHeaderClick(rowIndex, colIndex, $event)"
+                            style="position: relative;">
+                            <div v-if="rowIndex === 0" 
+                                 class="delete-col-btn" 
+                                 @click.stop="deleteColumn(colIndex)"
+                                 title="Delete this column">
+                                ×
+                            </div>
+                            <input type="text" 
+                                   v-model="header.value" 
+                                   @input="onHeaderInput(rowIndex, colIndex)"
+                                   placeholder="Enter header name" 
+                                   class="form-control form-control-sm">
+                            <div v-if="rowIndex === headerRows.length - 1 && colIndex === Math.floor(headerRow.length / 2)" 
+                                 class="add-header-row-btn" 
+                                 @click.stop="addHeaderRow">
+                                +
+                            </div>
+                        </th>
+                        <th class="table-secondary" style="width: 120px;">
+                            <div class="d-flex justify-content-center">
+                                <button @click="deleteHeaderRow(rowIndex)" class="btn btn-danger btn-sm">Delete</button>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(row, rowIndex) in tableRows" :key="'row-' + rowIndex">
+                        <td v-for="(cell, colIndex) in row" 
+                            :key="'cell-' + rowIndex + '-' + colIndex"
+                            v-if="!cell.hidden"
+                            :colspan="cell.colspan || 1"
+                            :rowspan="cell.rowspan || 1"
+                            :class="{ 'selectable': true, 'selected': isCellSelected(rowIndex, colIndex) }"
+                            @click="handleCellClick(rowIndex, colIndex, $event)"
+                            style="position: relative;">
+                            <div class="cell-wrapper">
+                                <div class="tags-container">
+                                    <div v-if="cell.tag" class="tag">
+                                        <span class="tag-type">Summary:</span>
+                                        <span class="tag-label">{{ cell.tag.label }}</span>
+                                        <span class="tag-remove" @click.stop="removeTag(rowIndex, colIndex)">×</span>
+                                    </div>
+                                </div>
+                                <select v-model="cell.type" 
+                                        @change="onCellTypeChange(rowIndex, colIndex)"
+                                        class="form-select form-select-sm cell-type-select">
+                                    <option value="text">Text Input</option>
+                                    <option value="number">Number Input</option>
+                                    <option value="select">Select (Good/Caution/Bad)</option>
+                                    <option value="placeholder">Placeholder (Read-only)</option>
+                                </select>
+                                <input v-if="cell.type === 'placeholder'" 
+                                       type="text" 
+                                       v-model="cell.placeholderText" 
+                                       @input="onCellInput(rowIndex, colIndex)"
+                                       placeholder="Enter fixed text (read-only in data entry)"
+                                       class="form-control form-control-sm mt-1">
+                                <input v-else
+                                       type="text" 
+                                       v-model="cell.placeholder" 
+                                       @input="onCellInput(rowIndex, colIndex)"
+                                       placeholder="Enter placeholder hint text (optional)"
+                                       class="form-control form-control-sm mt-1">
+                                <button class="btn btn-success btn-sm mt-1 w-100" 
+                                        @click.stop="openTagModal(rowIndex, colIndex)"
+                                        :disabled="cell.type === 'placeholder'">
+                                    + Tag
+                                </button>
+                            </div>
+                            <div v-if="colIndex === row.length - 1 && rowIndex === Math.floor(tableRows.length / 2)" 
+                                 class="add-col-btn" 
+                                 @click.stop="addColumn"
+                                 :style="{ top: '50%', transform: 'translateY(-50%)' }">
+                                +
+                            </div>
+                            <div v-if="rowIndex === tableRows.length - 1 && colIndex === Math.floor(row.length / 2)" 
+                                 class="add-row-btn" 
+                                 @click.stop="addRow">
+                                +
+                            </div>
+                        </td>
+                        <td class="table-secondary">
+                            <div class="d-flex justify-content-center">
+                                <button @click="deleteRow(rowIndex)" class="btn btn-danger btn-sm">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="border-top mt-4 pt-4">
+            <h3>Template Management</h3>
+            <div class="d-flex flex-wrap gap-2">
+                <button @click="exportTemplate" class="btn btn-success">💾 Export Template</button>
+                <button @click="triggerImportTemplate" class="btn btn-success">📂 Import Template</button>
+                <button @click="previewTemplate" class="btn btn-info">👁️ Preview Template</button>
+            </div>
+            <input type="file" ref="templateFileInput" @change="handleTemplateImport" accept="application/json,.json" style="display: none;">
+        </div>
+
+        <!-- Tag Modal -->
+        <div class="modal" :class="{ 'show': showTagModal, 'd-block': showTagModal }" @click.self="closeTagModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">🏷️ Add Summary Tag</h5>
+                        <button type="button" class="btn-close" @click="closeTagModal" aria-label="Close"></button>
+                    </div>
+                    <form @submit.prevent="submitTag">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Tag Type</label>
+                                <input type="text" value="Summary" disabled class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Label <span class="text-danger">*</span></label>
+                                <input type="text" v-model="tagForm.label" placeholder="Enter label for this Summary tag (required)" required class="form-control">
+                                <div class="form-text">
+                                    Example: "Total Amount", "Signature", "Priority Level", etc. This tag will appear in the data entry form.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" @click="closeTagModal" class="btn btn-secondary">Cancel</button>
+                            <button type="submit" class="btn btn-success">Add Summary Tag</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div v-if="showTagModal" class="modal-backdrop fade show"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                initialRows: 3,
+                initialCols: 3,
+                headerRows: [],
+                tableRows: [],
+                headerSelectionMode: false,
+                selectedHeaders: [],
+                targetSplitHeader: null,
+                cellSelectionMode: false,
+                selectedCells: [],
+                targetSplitCell: null,
+                showTagModal: false,
+                tagForm: {
+                    label: ''
+                },
+                currentTagCell: null,
+                history: [],
+                historyIndex: -1,
+                maxHistory: 50,
+                inputDebounceTimers: {}
+            },
+            computed: {
+                canMergeHeaders() {
+                    return this.selectedHeaders.length >= 2;
+                },
+                canSplitHeader() {
+                    return this.targetSplitHeader !== null;
+                },
+                canMergeCells() {
+                    return this.selectedCells.length >= 2;
+                },
+                canSplitCell() {
+                    return this.targetSplitCell !== null;
+                },
+                canUndo() {
+                    return this.historyIndex > 0;
+                },
+                canRedo() {
+                    return this.historyIndex < this.history.length - 1;
+                }
+            },
+            mounted() {
+                this.initializeTable();
+                
+                // Add keyboard shortcuts for undo/redo
+                document.addEventListener('keydown', (e) => {
+                    // Ctrl+Z or Cmd+Z for undo
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.undo();
+                    }
+                    // Ctrl+Y or Cmd+Shift+Z for redo
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+                        e.preventDefault();
+                        this.redo();
+                    }
+                });
+            },
+            methods: {
+                saveState() {
+                    const state = {
+                        headerRows: JSON.parse(JSON.stringify(this.headerRows)),
+                        tableRows: JSON.parse(JSON.stringify(this.tableRows))
+                    };
+                    
+                    // Remove any future history if we're not at the end
+                    if (this.historyIndex < this.history.length - 1) {
+                        this.history = this.history.slice(0, this.historyIndex + 1);
+                    }
+                    
+                    this.history.push(state);
+                    
+                    // Limit history size
+                    if (this.history.length > this.maxHistory) {
+                        this.history.shift();
+                    } else {
+                        this.historyIndex++;
+                    }
+                },
+                restoreState(state) {
+                    this.headerRows = JSON.parse(JSON.stringify(state.headerRows));
+                    this.tableRows = JSON.parse(JSON.stringify(state.tableRows));
+                },
+                undo() {
+                    if (this.canUndo) {
+                        this.historyIndex--;
+                        this.restoreState(this.history[this.historyIndex]);
+                    }
+                },
+                redo() {
+                    if (this.canRedo) {
+                        this.historyIndex++;
+                        this.restoreState(this.history[this.historyIndex]);
+                    }
+                },
+                initializeTable() {
+                    this.headerRows = [[]];
+                    for (let i = 0; i < this.initialCols; i++) {
+                        this.headerRows[0].push({
+                            value: `Header ${i + 1}`,
+                            merged: false,
+                            hidden: false,
+                            colspan: 1,
+                            rowspan: 1
+                        });
+                    }
+
+                    this.tableRows = [];
+                    for (let i = 0; i < this.initialRows; i++) {
+                        const row = [];
+                        for (let j = 0; j < this.initialCols; j++) {
+                            row.push({
+                                type: 'text',
+                                placeholder: '',
+                                placeholderText: '',
+                                tag: null,
+                                merged: false,
+                                hidden: false,
+                                colspan: 1,
+                                rowspan: 1
+                            });
+                        }
+                        this.tableRows.push(row);
+                    }
+
+                    this.clearHeaderSelection();
+                    this.saveState();
+                },
+                addRow() {
+                    const colCount = this.headerRows[0].length;
+                    const row = [];
+                    for (let i = 0; i < colCount; i++) {
+                        row.push({
+                            type: 'text',
+                            placeholder: '',
+                            placeholderText: '',
+                            tag: null,
+                            merged: false,
+                            hidden: false,
+                            colspan: 1,
+                            rowspan: 1
+                        });
+                    }
+                    this.tableRows.push(row);
+                    this.saveState();
+                },
+                addColumn() {
+                    const colCount = this.headerRows[0].length;
+                    
+                    this.headerRows.forEach((headerRow, index) => {
+                        headerRow.push({
+                            value: index === 0 ? `Header ${colCount + 1}` : `Sub-Header ${colCount + 1}`,
+                            merged: false,
+                            hidden: false,
+                            colspan: 1,
+                            rowspan: 1
+                        });
+                    });
+
+                    this.tableRows.forEach(row => {
+                        row.push({
+                            type: 'text',
+                            placeholder: '',
+                            placeholderText: '',
+                            tag: null,
+                            merged: false,
+                            hidden: false,
+                            colspan: 1,
+                            rowspan: 1
+                        });
+                    });
+                    this.saveState();
+                },
+                deleteRow(rowIndex) {
+                    Swal.fire({
+                        title: 'Delete Row?',
+                        text: 'Are you sure you want to delete this row?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Yes, delete it!',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.tableRows.splice(rowIndex, 1);
+                            this.saveState();
+                        }
+                    });
+                },
+                deleteColumn(colIndex) {
+                    if (this.headerRows[0].length <= 1) {
+                        Swal.fire({
+                            title: 'Cannot Delete',
+                            text: 'Cannot delete the last column. At least one column is required.',
+                            icon: 'error',
+                            confirmButtonColor: '#6366f1'
+                        });
+                        return;
+                    }
+                    
+                    Swal.fire({
+                        title: 'Delete Column?',
+                        text: 'Are you sure you want to delete this column? This will remove all data in this column.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Yes, delete it!',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.headerRows.forEach(headerRow => {
+                                headerRow.splice(colIndex, 1);
+                            });
+
+                            this.tableRows.forEach(row => {
+                                row.splice(colIndex, 1);
+                            });
+                            
+                            this.saveState();
+                        }
+                    });
+                },
+                clearTable() {
+                    Swal.fire({
+                        title: 'Clear Table?',
+                        text: 'Are you sure you want to clear the entire table? This will remove all rows!',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Yes, clear it!',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.tableRows = [];
+                            this.saveState();
+                            Swal.fire({
+                                title: 'Cleared!',
+                                text: 'Table has been cleared.',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        }
+                    });
+                },
+                addHeaderRow() {
+                    const colCount = this.headerRows[0].length;
+                    const newHeaderRow = [];
+                    for (let i = 0; i < colCount; i++) {
+                        newHeaderRow.push({
+                            value: `Sub-Header ${i + 1}`,
+                            merged: false,
+                            hidden: false,
+                            colspan: 1,
+                            rowspan: 1
+                        });
+                    }
+                    this.headerRows.push(newHeaderRow);
+                    this.saveState();
+                },
+                removeHeaderRow() {
+                    if (this.headerRows.length <= 1) {
+                        Swal.fire({
+                            title: 'Cannot Remove',
+                            text: 'Cannot remove the last header row. At least one header row is required.',
+                            icon: 'error',
+                            confirmButtonColor: '#6366f1'
+                        });
+                        return;
+                    }
+                    
+                    Swal.fire({
+                        title: 'Remove Header Row?',
+                        text: 'Are you sure you want to remove the last header row?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Yes, remove it!',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.headerRows.pop();
+                            this.saveState();
+                            Swal.fire({
+                                title: 'Removed!',
+                                text: 'Header row has been removed.',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        }
+                    });
+                },
+                deleteHeaderRow(rowIndex) {
+                    if (this.headerRows.length <= 1) {
+                        Swal.fire({
+                            title: 'Cannot Delete',
+                            text: 'Cannot delete the last header row. At least one header row is required.',
+                            icon: 'error',
+                            confirmButtonColor: '#6366f1'
+                        });
+                        return;
+                    }
+                    
+                    Swal.fire({
+                        title: 'Delete Header Row?',
+                        text: `Are you sure you want to delete header row ${rowIndex + 1}?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Yes, delete it!',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.headerRows.splice(rowIndex, 1);
+                            this.saveState();
+                            Swal.fire({
+                                title: 'Deleted!',
+                                text: 'Header row has been deleted.',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        }
+                    });
+                },
+                toggleHeaderSelection() {
+                    this.headerSelectionMode = !this.headerSelectionMode;
+                    if (!this.headerSelectionMode) {
+                        this.clearHeaderSelection();
+                    }
+                },
+                handleHeaderClick(rowIndex, colIndex, event) {
+                    if (event.target.tagName === 'INPUT' || event.target.tagName === 'BUTTON' || event.target.className.includes('delete-col-btn')) {
+                        return;
+                    }
+
+                    const header = this.headerRows[rowIndex][colIndex];
+
+                    // Check if Cmd/Ctrl is pressed for selection (works without enabling Header Selection Mode)
+                    if (event.metaKey || event.ctrlKey) {
+                        event.preventDefault();
+                        
+                        // Allow selecting merged cells for merging with other cells
+                        // if (header.merged) {
+                        //     alert('This header is already merged. Please split it first before selecting.');
+                        //     return;
+                        // }
+                        
+                        // Automatically enable header selection mode if not already enabled
+                        if (!this.headerSelectionMode) {
+                            this.headerSelectionMode = true;
+                        }
+                        
+                        const index = this.selectedHeaders.findIndex(h => h.row === rowIndex && h.col === colIndex);
+                        
+                        // Multi-select: add or remove from selection
+                        if (index > -1) {
+                            this.selectedHeaders.splice(index, 1);
+                        } else {
+                            this.selectedHeaders.push({ row: rowIndex, col: colIndex });
+                        }
+                        return;
+                    }
+                    
+                    // Regular click behavior
+                    if (!this.headerSelectionMode) {
+                        if (header.merged) {
+                            this.targetSplitHeader = { row: rowIndex, col: colIndex };
+                        }
+                        return;
+                    }
+
+                    // Allow selecting merged cells in selection mode
+                    // if (header.merged) {
+                    //     alert('This header is already merged. Please split it first before selecting.');
+                    //     return;
+                    // }
+
+                    const index = this.selectedHeaders.findIndex(h => h.row === rowIndex && h.col === colIndex);
+
+                    // Regular click in selection mode - clear all and select only this one, or deselect if already selected
+                    if (index > -1) {
+                        this.selectedHeaders.splice(index, 1);
+                    } else {
+                        this.selectedHeaders = [{ row: rowIndex, col: colIndex }];
+                    }
+                },
+                isHeaderSelected(rowIndex, colIndex) {
+                    return this.selectedHeaders.some(h => h.row === rowIndex && h.col === colIndex);
+                },
+                clearHeaderSelection() {
+                    this.selectedHeaders = [];
+                    this.targetSplitHeader = null;
+                },
+                mergeHeaderCells() {
+                    if (this.selectedHeaders.length < 2) {
+                        alert('Please select at least 2 header cells to merge.');
+                        return;
+                    }
+
+                    // Save current state before making any changes
+                    const savedState = JSON.parse(JSON.stringify(this.headerRows));
+
+                    // Collect all cells including those from merged cells
+                    let allCells = [];
+                    this.selectedHeaders.forEach((pos) => {
+                        const header = this.headerRows[pos.row][pos.col];
+                        if (header.merged && header.mergeInfo && header.mergeInfo.positions) {
+                            // Add all cells that were part of this merged cell
+                            header.mergeInfo.positions.forEach((p) => {
+                                if (!allCells.find(c => c.row === p.row && c.col === p.col)) {
+                                    allCells.push({ row: p.row, col: p.col });
+                                }
+                            });
+                        } else {
+                            // Add this single cell
+                            if (!allCells.find(c => c.row === pos.row && c.col === pos.col)) {
+                                allCells.push({ row: pos.row, col: pos.col });
+                            }
+                        }
+                    });
+
+                    // Now split any merged cells
+                    this.selectedHeaders.forEach((pos) => {
+                        const header = this.headerRows[pos.row][pos.col];
+                        if (header.merged) {
+                            // Split this merged cell
+                            header.colspan = 1;
+                            header.rowspan = 1;
+                            header.merged = false;
+                            
+                            // Restore all hidden cells
+                            if (header.mergeInfo && header.mergeInfo.positions) {
+                                header.mergeInfo.positions.forEach((p) => {
+                                    const cell = this.headerRows[p.row][p.col];
+                                    cell.hidden = false;
+                                    cell.colspan = 1;
+                                    cell.rowspan = 1;
+                                });
+                            }
+                            delete header.mergeInfo;
+                        }
+                    });
+
+                    // Use all collected cells for merging
+                    const rows = [...new Set(allCells.map(h => h.row))].sort((a, b) => a - b);
+                    const cols = [...new Set(allCells.map(h => h.col))].sort((a, b) => a - b);
+
+                    const isSameRow = rows.length === 1;
+                    const isSameCol = cols.length === 1;
+                    const isRectangular = this.isRectangularSelection(allCells, rows, cols);
+
+                    if (!isSameRow && !isSameCol && !isRectangular) {
+                        // Restore original state
+                        this.headerRows = savedState;
+                        alert('Please select headers that are in the same row, column, or form a rectangle.');
+                        return;
+                    }
+
+                    // Check if columns are consecutive when merging horizontally or rectangularly
+                    if (isSameRow && !isSameCol) {
+                        for (let i = 1; i < cols.length; i++) {
+                            if (cols[i] !== cols[i - 1] + 1) {
+                                // Restore original state
+                                this.headerRows = savedState;
+                                alert('For horizontal merge, please select consecutive header cells (no gaps allowed).');
+                                return;
+                            }
+                        }
+                    }
+
+                    // Check if rows are consecutive when merging vertically or rectangularly
+                    if (isSameCol && !isSameRow) {
+                        for (let i = 1; i < rows.length; i++) {
+                            if (rows[i] !== rows[i - 1] + 1) {
+                                // Restore original state
+                                this.headerRows = savedState;
+                                alert('For vertical merge, please select consecutive header cells (no gaps allowed).');
+                                return;
+                            }
+                        }
+                    }
+
+                    // For vertical merges (same column, different rows), check that all cells have the same colspan
+                    if (isSameCol && !isSameRow) {
+                        const firstColspan = cols.length;
+                        let hasWidthMismatch = false;
+                        
+                        rows.forEach(row => {
+                            const cellsInThisRow = allCells.filter(c => c.row === row);
+                            const rowCols = [...new Set(cellsInThisRow.map(c => c.col))].sort((a, b) => a - b);
+                            if (rowCols.length !== firstColspan) {
+                                hasWidthMismatch = true;
+                            }
+                        });
+                        
+                        if (hasWidthMismatch) {
+                            // Restore original state
+                            this.headerRows = savedState;
+                            alert('Cannot merge headers vertically: all rows must have the same width (number of columns).');
+                            return;
+                        }
+                    }
+
+                    const firstRow = rows[0];
+                    const firstCol = cols[0];
+                    const firstHeader = this.headerRows[firstRow][firstCol];
+
+                    let combinedContent = '';
+                    allCells.forEach((pos, index) => {
+                        const header = this.headerRows[pos.row][pos.col];
+                        if (header.value) {
+                            combinedContent += (index > 0 ? ' | ' : '') + header.value;
+                        }
+                    });
+
+                    firstHeader.value = combinedContent;
+                    firstHeader.colspan = cols.length;
+                    firstHeader.rowspan = rows.length;
+                    firstHeader.merged = true;
+                    firstHeader.mergeInfo = { 
+                        rows: rows, 
+                        cols: cols, 
+                        positions: allCells.map(p => ({ row: p.row, col: p.col }))
+                    };
+
+                    // Hide all cells except the first one
+                    allCells.forEach((pos) => {
+                        if (pos.row !== firstRow || pos.col !== firstCol) {
+                            this.headerRows[pos.row][pos.col].hidden = true;
+                            this.headerRows[pos.row][pos.col].colspan = 1;
+                            this.headerRows[pos.row][pos.col].rowspan = 1;
+                        }
+                    });
+
+                    this.clearHeaderSelection();
+                    this.saveState();
+                    const mergeType = isSameRow ? 'horizontal' : (isSameCol ? 'vertical' : 'rectangular');
+                    alert(`Header cells merged ${mergeType}ly successfully!`);
+                },
+                splitHeaderCell() {
+                    if (!this.targetSplitHeader) {
+                        alert('Please click on a merged header cell first.');
+                        return;
+                    }
+
+                    const { row, col } = this.targetSplitHeader;
+                    const header = this.headerRows[row][col];
+
+                    if (!header.merged) {
+                        alert('Selected header is not merged.');
+                        return;
+                    }
+
+                    // Reset the merged cell
+                    header.colspan = 1;
+                    header.rowspan = 1;
+                    header.merged = false;
+
+                    // Restore all hidden cells
+                    if (header.mergeInfo && header.mergeInfo.positions) {
+                        header.mergeInfo.positions.forEach((pos) => {
+                            const cell = this.headerRows[pos.row][pos.col];
+                            cell.hidden = false;
+                            cell.colspan = 1;
+                            cell.rowspan = 1;
+                        });
+                    }
+
+                    delete header.mergeInfo;
+                    this.targetSplitHeader = null;
+
+                    this.saveState();
+                    alert('Header cell split successfully!');
+                },
+                toggleCellSelection() {
+                    this.cellSelectionMode = !this.cellSelectionMode;
+                    if (!this.cellSelectionMode) {
+                        this.clearCellSelection();
+                    }
+                },
+                handleCellClick(rowIndex, colIndex, event) {
+                    const cell = this.tableRows[rowIndex][colIndex];
+                    
+                    // Check if Cmd/Ctrl is pressed for selection (works without enabling Cell Selection Mode)
+                    if (event.metaKey || event.ctrlKey) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        
+                        // Automatically enable cell selection mode if not already enabled
+                        if (!this.cellSelectionMode) {
+                            this.cellSelectionMode = true;
+                        }
+                        
+                        const index = this.selectedCells.findIndex(h => h.row === rowIndex && h.col === colIndex);
+                        
+                        // Multi-select: add or remove from selection
+                        if (index > -1) {
+                            this.selectedCells.splice(index, 1);
+                        } else {
+                            this.selectedCells.push({ row: rowIndex, col: colIndex });
+                        }
+                        return;
+                    }
+                    
+                    // Regular click behavior
+                    if (!this.cellSelectionMode) {
+                        if (cell.merged) {
+                            this.targetSplitCell = { row: rowIndex, col: colIndex };
+                        } else {
+                            this.targetSplitCell = null;
+                        }
+                        return;
+                    }
+
+                    event.stopPropagation();
+                    
+                    const index = this.selectedCells.findIndex(h => h.row === rowIndex && h.col === colIndex);
+                    
+                    // Regular click in selection mode - clear all and select only this one, or deselect if already selected
+                    if (index > -1) {
+                        this.selectedCells.splice(index, 1);
+                    } else {
+                        this.selectedCells = [{ row: rowIndex, col: colIndex }];
+                    }
+                },
+                isCellSelected(rowIndex, colIndex) {
+                    return this.selectedCells.some(h => h.row === rowIndex && h.col === colIndex);
+                },
+                clearCellSelection() {
+                    this.selectedCells = [];
+                    this.targetSplitCell = null;
+                },
+                mergeCells() {
+                    if (this.selectedCells.length < 2) {
+                        alert('Please select at least 2 cells to merge.');
+                        return;
+                    }
+
+                    // Save current state before making any changes
+                    const savedState = JSON.parse(JSON.stringify(this.tableRows));
+
+                    // Collect all cells including those from merged cells
+                    let allCells = [];
+                    this.selectedCells.forEach((pos) => {
+                        const cell = this.tableRows[pos.row][pos.col];
+                        if (cell.merged && cell.mergeInfo && cell.mergeInfo.positions) {
+                            // Add all cells that were part of this merged cell
+                            cell.mergeInfo.positions.forEach((p) => {
+                                if (!allCells.find(c => c.row === p.row && c.col === p.col)) {
+                                    allCells.push({ row: p.row, col: p.col });
+                                }
+                            });
+                        } else {
+                            // Add this single cell
+                            if (!allCells.find(c => c.row === pos.row && c.col === pos.col)) {
+                                allCells.push({ row: pos.row, col: pos.col });
+                            }
+                        }
+                    });
+
+                    // Now split any merged cells
+                    this.selectedCells.forEach((pos) => {
+                        const cell = this.tableRows[pos.row][pos.col];
+                        if (cell.merged) {
+                            // Split this merged cell
+                            cell.colspan = 1;
+                            cell.rowspan = 1;
+                            cell.merged = false;
+                            
+                            // Restore all hidden cells
+                            if (cell.mergeInfo && cell.mergeInfo.positions) {
+                                cell.mergeInfo.positions.forEach((p, index) => {
+                                    if (index > 0) {
+                                        this.tableRows[p.row][p.col].hidden = false;
+                                    }
+                                });
+                            }
+                            delete cell.mergeInfo;
+                        }
+                    });
+
+                    // Use all collected cells for merging
+                    const rows = [...new Set(allCells.map(p => p.row))].sort((a, b) => a - b);
+                    const cols = [...new Set(allCells.map(p => p.col))].sort((a, b) => a - b);
+
+                    const isSameRow = rows.length === 1;
+                    const isSameCol = cols.length === 1;
+                    const isRectangular = this.isRectangularSelection(allCells, rows, cols);
+
+                    if (!isSameRow && !isSameCol && !isRectangular) {
+                        // Restore original state
+                        this.tableRows = savedState;
+                        alert('Please select cells in the same row, column, or a rectangular region.');
+                        return;
+                    }
+
+                    // Check if rows are consecutive when merging vertically or rectangularly
+                    if (!isSameRow) {
+                        for (let i = 1; i < rows.length; i++) {
+                            if (rows[i] !== rows[i - 1] + 1) {
+                                // Restore original state
+                                this.tableRows = savedState;
+                                alert('For vertical merge, please select cells in consecutive rows (no gaps allowed).');
+                                return;
+                            }
+                        }
+                    }
+
+                    // Check if columns are consecutive when merging horizontally or rectangularly
+                    if (!isSameCol) {
+                        for (let i = 1; i < cols.length; i++) {
+                            if (cols[i] !== cols[i - 1] + 1) {
+                                // Restore original state
+                                this.tableRows = savedState;
+                                alert('For horizontal merge, please select cells in consecutive columns (no gaps allowed).');
+                                return;
+                            }
+                        }
+                    }
+
+                    // For vertical merges (same column, different rows), check that all cells have the same colspan
+                    if (isSameCol && !isSameRow) {
+                        const firstColspan = cols.length;
+                        let hasWidthMismatch = false;
+                        
+                        rows.forEach(row => {
+                            const cellsInThisRow = allCells.filter(c => c.row === row);
+                            const rowCols = [...new Set(cellsInThisRow.map(c => c.col))].sort((a, b) => a - b);
+                            if (rowCols.length !== firstColspan) {
+                                hasWidthMismatch = true;
+                            }
+                        });
+                        
+                        if (hasWidthMismatch) {
+                            // Restore original state
+                            this.tableRows = savedState;
+                            alert('Cannot merge cells vertically: all rows must have the same width (number of columns).');
+                            return;
+                        }
+                    }
+
+                    const firstRow = rows[0];
+                    const firstCol = cols[0];
+                    const firstCell = this.tableRows[firstRow][firstCol];
+
+                    firstCell.colspan = cols.length;
+                    firstCell.rowspan = rows.length;
+                    firstCell.merged = true;
+                    firstCell.mergeInfo = {
+                        startRow: firstRow,
+                        startCol: firstCol,
+                        endRow: rows[rows.length - 1],
+                        endCol: cols[cols.length - 1],
+                        positions: allCells
+                    };
+
+                    allCells.forEach(pos => {
+                        if (pos.row !== firstRow || pos.col !== firstCol) {
+                            this.tableRows[pos.row][pos.col].hidden = true;
+                        }
+                    });
+
+                    this.clearCellSelection();
+                    this.saveState();
+                    const mergeType = isSameRow ? 'horizontal' : (isSameCol ? 'vertical' : 'rectangular');
+                    // alert(`Cells merged ${mergeType}ly successfully!`);
+                },
+                splitCell() {
+                    if (!this.targetSplitCell) {
+                        alert('Please click on a merged cell first.');
+                        return;
+                    }
+
+                    const { row, col } = this.targetSplitCell;
+                    const cell = this.tableRows[row][col];
+
+                    if (!cell.merged) {
+                        alert('Selected cell is not merged.');
+                        return;
+                    }
+
+                    cell.colspan = 1;
+                    cell.rowspan = 1;
+                    cell.merged = false;
+
+                    if (cell.mergeInfo && cell.mergeInfo.positions) {
+                        cell.mergeInfo.positions.forEach((pos, index) => {
+                            if (index > 0) {
+                                this.tableRows[pos.row][pos.col].hidden = false;
+                            }
+                        });
+                    }
+
+                    delete cell.mergeInfo;
+                    this.targetSplitCell = null;
+
+                    this.saveState();
+                    alert('Cell split successfully!');
+                },
+                isRectangularSelection(positions, rows, cols) {
+                    for (let row of rows) {
+                        for (let col of cols) {
+                            if (!positions.find(p => p.row === row && p.col === col)) {
+                                return false;
+                            }
+                        }
+                    }
+                    return positions.length === rows.length * cols.length;
+                },
+                openTagModal(rowIndex, colIndex) {
+                    const cell = this.tableRows[rowIndex][colIndex];
+                    if (cell.tag) {
+                        alert('This cell already has a Summary tag. Please remove it first to add a new one.');
+                        return;
+                    }
+                    this.currentTagCell = { row: rowIndex, col: colIndex };
+                    this.tagForm.label = '';
+                    this.showTagModal = true;
+                },
+                closeTagModal() {
+                    this.showTagModal = false;
+                    this.currentTagCell = null;
+                },
+                submitTag() {
+                    if (!this.tagForm.label.trim()) {
+                        alert('Label is required!');
+                        return;
+                    }
+
+                    if (this.currentTagCell) {
+                        const { row, col } = this.currentTagCell;
+                        const cell = this.tableRows[row][col];
+                        
+                        if (cell.tag) {
+                            alert('This cell already has a Summary tag. Only one tag per cell is allowed.');
+                            this.closeTagModal();
+                            return;
+                        }
+
+                        this.$set(cell, 'tag', {
+                            type: 'Summary',
+                            label: this.tagForm.label
+                        });
+                        this.saveState();
+                    }
+
+                    this.closeTagModal();
+                },
+                removeTag(rowIndex, colIndex) {
+                    if (confirm('Remove this Summary tag?')) {
+                        this.$set(this.tableRows[rowIndex][colIndex], 'tag', null);
+                        this.saveState();
+                    }
+                },
+                exportTemplate() {
+                    const template = {
+                        version: '1.0',
+                        type: 'table-template',
+                        headers: this.headerRows.map(row => 
+                            row.map(h => ({
+                                value: h.value,
+                                merged: h.merged,
+                                hidden: h.hidden,
+                                colspan: h.colspan,
+                                rowspan: h.rowspan,
+                                mergeInfo: h.mergeInfo
+                            }))
+                        ),
+                        structure: this.tableRows.map(row => 
+                            row.map(cell => ({
+                                type: cell.type || 'text',
+                                placeholder: cell.placeholder || '',
+                                placeholderText: cell.placeholderText || '',
+                                tag: cell.tag || null,
+                                merged: cell.merged,
+                                hidden: cell.hidden,
+                                colspan: cell.colspan,
+                                rowspan: cell.rowspan,
+                                mergeInfo: cell.mergeInfo
+                            }))
+                        )
+                    };
+                    
+                    const json = JSON.stringify(template, null, 2);
+                    const blob = new Blob([json], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'table-template.json';
+                    link.click();
+                    URL.revokeObjectURL(url);
+                    
+                    alert('Template exported successfully!');
+                },
+                triggerImportTemplate() {
+                    this.$refs.templateFileInput.click();
+                },
+                handleTemplateImport(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const template = JSON.parse(e.target.result);
+                            this.importTemplate(template);
+                            event.target.value = '';
+                        } catch (error) {
+                            alert('Error parsing template file: ' + error.message);
+                        }
+                    };
+                    reader.readAsText(file);
+                },
+                importTemplate(template) {
+                    if (!template.headers || !template.structure) {
+                        alert('Invalid template format.');
+                        return;
+                    }
+
+                    this.headerRows = template.headers.map(row =>
+                        row.map(h => ({
+                            value: h.value || '',
+                            merged: h.merged || false,
+                            hidden: h.hidden || false,
+                            colspan: h.colspan || 1,
+                            rowspan: h.rowspan || 1,
+                            mergeInfo: h.mergeInfo
+                        }))
+                    );
+
+                    this.tableRows = template.structure.map(row =>
+                        row.map(cell => ({
+                            type: cell.type || 'text',
+                            placeholder: cell.placeholder || '',
+                            placeholderText: cell.placeholderText || '',
+                            tag: cell.tag || null,
+                            merged: cell.merged || false,
+                            hidden: cell.hidden || false,
+                            colspan: cell.colspan || 1,
+                            rowspan: cell.rowspan || 1,
+                            mergeInfo: cell.mergeInfo
+                        }))
+                    );
+
+                    if (this.tableRows.length > 0) {
+                        this.initialRows = this.tableRows.length;
+                    }
+                    if (this.headerRows.length > 0 && this.headerRows[0].length > 0) {
+                        this.initialCols = this.headerRows[0].length;
+                    }
+
+                    this.clearHeaderSelection();
+                    alert('Template imported successfully!');
+                },
+                previewTemplate() {
+                    const template = {
+                        headers: this.headerRows,
+                        rows: this.tableRows.length,
+                        columns: this.headerRows[0] ? this.headerRows[0].length : 0
+                    };
+                    console.log('Template Preview:', template);
+                    alert(`Template Preview:\n\nHeader Rows: ${this.headerRows.length}\nData Rows: ${this.tableRows.length}\nColumns: ${this.headerRows[0].length}\n\nCheck console for detailed structure.`);
+                },
+                onHeaderInput(rowIndex, colIndex) {
+                    const timerId = `header-${rowIndex}-${colIndex}`;
+                    if (this.inputDebounceTimers[timerId]) {
+                        clearTimeout(this.inputDebounceTimers[timerId]);
+                    }
+                    this.inputDebounceTimers[timerId] = setTimeout(() => {
+                        this.saveState();
+                        delete this.inputDebounceTimers[timerId];
+                    }, 1000);
+                },
+                onCellTypeChange(rowIndex, colIndex) {
+                    this.saveState();
+                },
+                onCellInput(rowIndex, colIndex) {
+                    const timerId = `cell-${rowIndex}-${colIndex}`;
+                    if (this.inputDebounceTimers[timerId]) {
+                        clearTimeout(this.inputDebounceTimers[timerId]);
+                    }
+                    this.inputDebounceTimers[timerId] = setTimeout(() => {
+                        this.saveState();
+                        delete this.inputDebounceTimers[timerId];
+                    }, 1000);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

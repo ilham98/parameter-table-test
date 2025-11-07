@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table Data Entry</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            gap: 5px;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+        }
+
+        .tag .tag-type {
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .tag .tag-label {
+            font-weight: 400;
+        }
+
+        .readonly-cell {
+            background: #f3f4f6;
+            color: #6b7280;
+            font-weight: 500;
+            padding: 8px;
+            border-radius: 6px;
+            min-height: 38px;
+            display: flex;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container my-4 p-4">
+        <h1 class="text-center mb-4">✍️ Table Data Entry</h1>
+        
+        <div class="alert alert-info" role="alert">
+            <strong>Purpose:</strong> Fill in data based on the loaded template structure.
+        </div>
+
+        <div v-if="!templateLoaded" class="alert alert-warning" role="alert">
+            <strong>⚠️ No Template Loaded:</strong> Please load a template first to start entering data.
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <button @click="triggerLoadTemplate" class="btn btn-success">📂 Load Template</button>
+            <button @click="clearAllData" class="btn btn-danger" :disabled="!templateLoaded">🗑️ Clear All Data</button>
+            <button @click="toggleSummary" class="btn btn-success" :disabled="!templateLoaded">{{ showSummary ? '📋 Hide Summary' : '📋 Show Summary' }}</button>
+        </div>
+        <input type="file" ref="templateFileInput" @change="handleTemplateLoad" accept="application/json,.json" style="display: none;">
+
+        <div v-if="showSummary && templateLoaded" class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">📋 Summary Tags List</h5>
+                <div v-if="summaryItems.length === 0" class="text-center text-muted fst-italic py-3">
+                    No summary tags found. Add tags to cells to see them here.
+                </div>
+                <div v-else>
+                    <div v-for="(item, index) in summaryItems" :key="index" class="card mb-2">
+                        <div class="card-body py-2">
+                            <div class="text-muted small mb-1">
+                                <strong>Row {{ item.row }}</strong> | <strong>{{ item.column }}</strong>
+                            </div>
+                            <div class="mb-1">
+                                <div class="tag">
+                                    <span class="tag-type">Summary:</span>
+                                    <span class="tag-label">{{ item.label }}</span>
+                                </div>
+                            </div>
+                            <div v-if="item.value" class="text-secondary small">Value: {{ item.value }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="templateLoaded" class="table-responsive mt-3">
+            <table class="table table-bordered table-hover">
+                <thead class="table-primary">
+                    <tr v-for="(headerRow, rowIndex) in headerRows" :key="'header-' + rowIndex">
+                        <th v-for="(header, colIndex) in headerRow" 
+                            :key="'header-' + rowIndex + '-' + colIndex"
+                            v-if="!header.hidden"
+                            :colspan="header.colspan || 1"
+                            :rowspan="header.rowspan || 1">
+                            {{ header.value }}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(row, rowIndex) in tableRows" :key="'row-' + rowIndex">
+                        <td v-for="(cell, colIndex) in row" 
+                            :key="'cell-' + rowIndex + '-' + colIndex"
+                            v-if="!cell.hidden"
+                            :colspan="cell.colspan || 1"
+                            :rowspan="cell.rowspan || 1">
+                            <div class="cell-wrapper">
+                                <div class="tags-container">
+                                    <div v-if="cell.tag" class="tag">
+                                        <span class="tag-type">Summary:</span>
+                                        <span class="tag-label">{{ cell.tag.label }}</span>
+                                    </div>
+                                </div>
+                                
+                                                                <!-- Placeholder (Read-only) -->
+                                <div v-if="cell.type === 'placeholder'" class="readonly-cell">
+                                    {{ cell.placeholderText || 'N/A' }}
+                                </div>
+                                
+                                <!-- Number Input -->
+                                <input v-else-if="cell.type === 'number'" 
+                                       type="number" 
+                                       class="form-control form-control-sm"
+                                       v-model.number="cell.value" 
+                                       :placeholder="cell.placeholder || 'Enter number...'">
+                                
+                                <!-- Select (Good/Caution/Bad) -->
+                                <select v-else-if="cell.type === 'select'" 
+                                        class="form-select form-select-sm"
+                                        v-model="cell.value">
+                                    <option value="">{{ cell.placeholder || 'Select option...' }}</option>
+                                    <option value="Good">✓ Good</option>
+                                    <option value="Caution">⚠ Caution</option>
+                                    <option value="Bad">✗ Bad</option>
+                                </select>
+                                
+                                <!-- Text Input (default) -->
+                                <input v-else
+                                       type="text" 
+                                       class="form-control form-control-sm"
+                                       v-model="cell.value" 
+                                       :placeholder="cell.placeholder || 'Enter data...'">
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div v-if="templateLoaded" class="mt-4">
+            <h3 class="mb-3">Data Management</h3>
+            <div class="d-flex flex-wrap gap-2">
+                <button @click="exportData" class="btn btn-success">💾 Export Data (JSON)</button>
+                <button @click="triggerImportData" class="btn btn-primary">📥 Import Data</button>
+                <button @click="exportToCSV" class="btn btn-success">📥 Export to CSV</button>
+                <button @click="printTable" class="btn btn-secondary">🖨️ Print Table</button>
+            </div>
+            <input type="file" ref="dataFileInput" @change="handleDataImport" accept="application/json,.json" style="display: none;">
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                templateLoaded: false,
+                headerRows: [],
+                tableRows: [],
+                showSummary: false
+            },
+            computed: {
+                summaryItems() {
+                    const items = [];
+                    this.tableRows.forEach((row, rowIndex) => {
+                        row.forEach((cell, colIndex) => {
+                            if (cell.tag && !cell.hidden) {
+                                const headerRow = this.headerRows[this.headerRows.length - 1];
+                                const columnName = headerRow[colIndex] ? headerRow[colIndex].value : `Column ${colIndex + 1}`;
+                                items.push({
+                                    row: rowIndex + 1,
+                                    column: columnName,
+                                    label: cell.tag.label,
+                                    value: cell.value
+                                });
+                            }
+                        });
+                    });
+                    return items;
+                }
+            },
+            methods: {
+                triggerLoadTemplate() {
+                    this.$refs.templateFileInput.click();
+                },
+                handleTemplateLoad(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const template = JSON.parse(e.target.result);
+                            this.loadTemplate(template);
+                            event.target.value = '';
+                        } catch (error) {
+                            alert('Error parsing template file: ' + error.message);
+                        }
+                    };
+                    reader.readAsText(file);
+                },
+                loadTemplate(template) {
+                    if (!template.headers || !template.structure) {
+                        alert('Invalid template format. Please load a valid table template.');
+                        return;
+                    }
+
+                    // Load headers (read-only)
+                    this.headerRows = template.headers.map(row =>
+                        row.map(h => ({
+                            value: h.value || '',
+                            merged: h.merged || false,
+                            hidden: h.hidden || false,
+                            colspan: h.colspan || 1,
+                            rowspan: h.rowspan || 1,
+                            mergeInfo: h.mergeInfo
+                        }))
+                    );
+
+                    // Load table structure with empty values but preserve template properties
+                    this.tableRows = template.structure.map(row =>
+                        row.map(cell => ({
+                            value: '',  // Empty value for data entry
+                            placeholder: cell.placeholder || '',
+                            placeholderText: cell.placeholderText || '',  // Preserve placeholder text
+                            type: cell.type || 'text',  // Preserve cell type
+                            tag: cell.tag || null,  // Preserve tags from template
+                            merged: cell.merged || false,
+                            hidden: cell.hidden || false,
+                            colspan: cell.colspan || 1,
+                            rowspan: cell.rowspan || 1,
+                            mergeInfo: cell.mergeInfo
+                        }))
+                    );
+
+                    this.templateLoaded = true;
+                    alert('Template loaded successfully! Cell types and tagged cells from the template are preserved.');
+                },
+                clearAllData() {
+                    if (confirm('Are you sure you want to clear all entered data? This will not affect the template structure.')) {
+                        this.tableRows.forEach(row => {
+                            row.forEach(cell => {
+                                cell.value = '';
+                            });
+                        });
+                        alert('All data cleared!');
+                    }
+                },
+                toggleSummary() {
+                    this.showSummary = !this.showSummary;
+                },
+                exportData() {
+                    const data = {
+                        version: '1.0',
+                        type: 'table-data',
+                        timestamp: new Date().toISOString(),
+                        headers: this.headerRows.map(row => 
+                            row.map(h => ({
+                                value: h.value,
+                                merged: h.merged,
+                                hidden: h.hidden,
+                                colspan: h.colspan,
+                                rowspan: h.rowspan,
+                                mergeInfo: h.mergeInfo
+                            }))
+                        ),
+                        data: this.tableRows.map(row => 
+                            row.map(cell => ({
+                                value: cell.value,
+                                type: cell.type,
+                                placeholder: cell.placeholder,
+                                placeholderText: cell.placeholderText,
+                                tag: cell.tag,
+                                merged: cell.merged,
+                                hidden: cell.hidden,
+                                colspan: cell.colspan,
+                                rowspan: cell.rowspan,
+                                mergeInfo: cell.mergeInfo
+                            }))
+                        )
+                    };
+                    
+                    const json = JSON.stringify(data, null, 2);
+                    this.downloadFile(json, 'table-data.json', 'application/json');
+                    alert('Data exported successfully!');
+                },
+                triggerImportData() {
+                    this.$refs.dataFileInput.click();
+                },
+                handleDataImport(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const jsonData = JSON.parse(e.target.result);
+                            this.importData(jsonData);
+                            event.target.value = '';
+                        } catch (error) {
+                            alert('Error parsing data file: ' + error.message);
+                        }
+                    };
+                    reader.readAsText(file);
+                },
+                importData(jsonData) {
+                    if (!jsonData.data) {
+                        alert('Invalid data format.');
+                        return;
+                    }
+
+                    // Import data while preserving structure and cell types
+                    jsonData.data.forEach((dataRow, rowIndex) => {
+                        if (rowIndex < this.tableRows.length) {
+                            dataRow.forEach((cellData, colIndex) => {
+                                if (colIndex < this.tableRows[rowIndex].length) {
+                                    this.tableRows[rowIndex][colIndex].value = cellData.value || '';
+                                    this.tableRows[rowIndex][colIndex].tag = cellData.tag || null;
+                                    // Preserve type and placeholder properties if they exist in imported data
+                                    if (cellData.type) {
+                                        this.tableRows[rowIndex][colIndex].type = cellData.type;
+                                    }
+                                    if (cellData.placeholder) {
+                                        this.tableRows[rowIndex][colIndex].placeholder = cellData.placeholder;
+                                    }
+                                    if (cellData.placeholderText) {
+                                        this.tableRows[rowIndex][colIndex].placeholderText = cellData.placeholderText;
+                                    }
+                                }
+                            });
+                        }
+                    });
+
+                    alert('Data imported successfully!');
+                },
+                exportToCSV() {
+                    let csv = '';
+                    
+                    // Add headers
+                    this.headerRows.forEach(headerRow => {
+                        const values = headerRow
+                            .filter(h => !h.hidden)
+                            .map(h => h.value || '');
+                        csv += values.join(',') + '\n';
+                    });
+
+                    // Add rows
+                    this.tableRows.forEach(row => {
+                        const values = row
+                            .filter(c => !c.hidden)
+                            .map(cell => {
+                                // For placeholder cells, show the placeholderText instead of value
+                                let value = cell.type === 'placeholder' 
+                                    ? (cell.placeholderText || '')
+                                    : (cell.value || '');
+                                    
+                                if (cell.tag) {
+                                    value += ` [${cell.tag.type}: ${cell.tag.label}]`;
+                                }
+                                return value.includes(',') ? `"${value.replace(/"/g, '""')}"` : value;
+                            });
+                        csv += values.join(',') + '\n';
+                    });
+
+                    this.downloadFile(csv, 'table-data.csv', 'text/csv');
+                },
+                printTable() {
+                    const headerRows = this.headerRows.map(row => 
+                        row.filter(h => !h.hidden).map(h => h.value)
+                    );
+                    
+                    let printContent = '<html><head><title>Table Print</title>';
+                    printContent += '<style>table { border-collapse: collapse; width: 100%; }';
+                    printContent += 'th, td { border: 1px solid black; padding: 8px; text-align: left; }';
+                    printContent += 'th { background-color: #6366f1; color: white; }';
+                    printContent += '.tag { display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin: 2px; }';
+                    printContent += '</style></head><body>';
+                    printContent += '<h1>Table Data</h1><table><thead>';
+                    
+                    headerRows.forEach(row => {
+                        printContent += '<tr>';
+                        row.forEach(header => {
+                            printContent += `<th>${header}</th>`;
+                        });
+                        printContent += '</tr>';
+                    });
+                    
+                    printContent += '</thead><tbody>';
+                    
+                    this.tableRows.forEach(row => {
+                        printContent += '<tr>';
+                        row.filter(c => !c.hidden).forEach(cell => {
+                            let cellContent = cell.value || '';
+                            if (cell.tag) {
+                                cellContent += `<br><span class="tag">${cell.tag.type}: ${cell.tag.label}</span>`;
+                            }
+                            printContent += `<td>${cellContent}</td>`;
+                        });
+                        printContent += '</tr>';
+                    });
+                    
+                    printContent += '</tbody></table></body></html>';
+                    
+                    const printWindow = window.open('', '', 'height=600,width=800');
+                    printWindow.document.write(printContent);
+                    printWindow.document.close();
+                    printWindow.print();
+                },
+                downloadFile(content, filename, contentType) {
+                    const blob = new Blob([content], { type: contentType });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = filename;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
