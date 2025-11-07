@@ -347,6 +347,7 @@
                         <th v-for="(header, colIndex) in headerRows[0]" 
                             :key="'delete-' + colIndex"
                             v-if="!header.hidden"
+                            :colspan="header.colspan || 1"
                             class="action-cell">
                             <div class="d-flex justify-content-center">
                                 <div class="delete-col-btn" 
@@ -1093,9 +1094,13 @@
                         }
                     });
 
+                    // Calculate actual colspan and rowspan
+                    const actualColspan = cols.length;
+                    const actualRowspan = rows.length;
+
                     firstHeader.value = combinedContent;
-                    firstHeader.colspan = cols.length;
-                    firstHeader.rowspan = rows.length;
+                    firstHeader.colspan = actualColspan;
+                    firstHeader.rowspan = actualRowspan;
                     firstHeader.merged = true;
                     firstHeader.mergeInfo = { 
                         rows: rows, 
@@ -1115,7 +1120,7 @@
                     this.clearHeaderSelection();
                     this.saveState();
                     const mergeType = isSameRow ? 'horizontal' : (isSameCol ? 'vertical' : 'rectangular');
-                    alert(`Header cells merged ${mergeType}ly successfully!`);
+                    alert(`Header cells merged ${mergeType}ly successfully! (colspan: ${actualColspan}, rowspan: ${actualRowspan})`);
                 },
                 splitHeaderCell() {
                     if (!this.targetSplitHeader) {
@@ -1323,8 +1328,12 @@
                     const firstCol = cols[0];
                     const firstCell = this.tableRows[firstRow][firstCol];
 
-                    firstCell.colspan = cols.length;
-                    firstCell.rowspan = rows.length;
+                    // Calculate actual colspan and rowspan
+                    const actualColspan = cols.length;
+                    const actualRowspan = rows.length;
+
+                    firstCell.colspan = actualColspan;
+                    firstCell.rowspan = actualRowspan;
                     firstCell.merged = true;
                     firstCell.mergeInfo = {
                         startRow: firstRow,
@@ -1343,7 +1352,7 @@
                     this.clearCellSelection();
                     this.saveState();
                     const mergeType = isSameRow ? 'horizontal' : (isSameCol ? 'vertical' : 'rectangular');
-                    // alert(`Cells merged ${mergeType}ly successfully!`);
+                    console.log(`Cells merged ${mergeType}ly (colspan: ${actualColspan}, rowspan: ${actualRowspan})`);
                 },
                 splitCell() {
                     if (!this.targetSplitCell) {
