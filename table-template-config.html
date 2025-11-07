@@ -12,13 +12,40 @@
         body {
             background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
             min-height: 100vh;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
         }
 
         .container {
             background: white;
             border-radius: 16px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 0;
+            height: calc(100vh - 60px);
+            margin-top: 60px;
+        }
+
+        .table-section {
+            background: white;
+            padding: 20px;
+            overflow-y: auto;
+            height: calc(100vh - 60px);
+        }
+
+        .controls-section {
+            background: #f8f9fa;
+            padding: 20px;
+            overflow-y: visible;
+            height: calc(100vh - 60px);
+            border-left: 2px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
         }
 
         td.selectable, th.selectable {
@@ -195,11 +222,81 @@
             vertical-align: middle;
             padding: 8px;
         }
+
+        .controls-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .controls-panel h5 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: #6366f1;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .controls-panel .control-section {
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .controls-panel .control-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .controls-panel .btn {
+            width: 100%;
+            margin-bottom: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        .controls-panel .btn:last-child {
+            margin-bottom: 0;
+        }
+
+        .controls-panel .input-group {
+            margin-bottom: 4px;
+        }
+
+        .controls-panel .input-group-text {
+            font-size: 11px;
+            padding: 3px 6px;
+        }
+
+        .controls-panel .form-control {
+            font-size: 11px;
+            padding: 3px 6px;
+        }
+
+        .controls-panel strong {
+            font-size: 12px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .controls-panel .small {
+            font-size: 10px;
+            margin-bottom: 4px;
+        }
+
+        .controls-panel .badge {
+            font-size: 10px;
+        }
     </style>
 </head>
 <body>
     <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
         <div class="container-fluid">
             <a class="navbar-brand" href="index.html">
                 <span style="font-size: 24px;">📊</span> Parameter Table Test
@@ -223,69 +320,26 @@
         </div>
     </nav>
 
-    <div id="app" class="container my-4 p-4">
-        <h1 class="text-center mb-4">📐 Table Template Configuration</h1>
-        
-        <div class="alert alert-info" role="alert">
-            <strong>Purpose:</strong> Configure the table structure, headers, and parameter cells that need summary/special attention. Parameters will be preserved when template is loaded in the data entry form.
-        </div>
+    <div id="app" class="main-content">
+        <!-- Left Section: Table -->
+        <div class="table-section">
+            <h1 class="text-center mb-4">📐 Table Template Configuration</h1>
+            
+            <div class="alert alert-info" role="alert">
+                <strong>Purpose:</strong> Configure the table structure, headers, and parameter cells that need summary/special attention. Parameters will be preserved when template is loaded in the data entry form.
+            </div>
 
-        <div class="card bg-warning-subtle mb-3">
-            <div class="card-body">
-                <h5 class="card-title text-warning-emphasis">📋 Header Row Controls</h5>
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                    <button @click="toggleHeaderSelection" :class="headerSelectionMode ? 'btn btn-danger btn-sm' : 'btn btn-primary btn-sm'">
-                        {{ headerSelectionMode ? 'Disable Header Selection' : 'Enable Header Selection' }}
-                    </button>
-                    <button @click="mergeHeaderCells" :disabled="!canMergeHeaders" class="btn btn-primary btn-sm">Merge Selected Headers</button>
-                    <button @click="splitHeaderCell" class="btn btn-danger btn-sm" :disabled="!canSplitHeader">Split Header</button>
-                </div>
-                <p class="mb-0 text-warning-emphasis">
-                    <strong>Tip:</strong> Hold Cmd (Mac) or Ctrl (Windows) + Click to select multiple headers without enabling selection mode | Current header rows: <span class="badge bg-warning">{{ headerRows.length }}</span>
-                </p>
+            <div v-if="cellSelectionMode" class="alert alert-info" role="alert">
+                ℹ️ <strong>Cell Selection Mode Active:</strong> Click cells to select. Hold Cmd (Mac) or Ctrl (Windows) while clicking to select multiple cells.
             </div>
-        </div>
+            <div v-if="!cellSelectionMode && selectedCells.length > 0" class="alert alert-success" role="alert">
+                ℹ️ <strong>{{ selectedCells.length }} cell(s) selected</strong> via Cmd/Ctrl+Click. Click "Merge Selected Cells" to merge them.
+            </div>
+            <div v-if="!cellSelectionMode && canSplitCell" class="alert alert-warning" role="alert">
+                ℹ️ Click "Split Cell" to unmerge the selected merged cell.
+            </div>
 
-        <div class="row g-2 align-items-center mb-3">
-            <div class="col-auto">
-                <label class="form-label mb-0">Initial Rows:</label>
-            </div>
-            <div class="col-auto">
-                <input type="number" v-model.number="initialRows" min="1" max="50" class="form-control form-control-sm">
-            </div>
-            <div class="col-auto">
-                <label class="form-label mb-0">Initial Columns:</label>
-            </div>
-            <div class="col-auto">
-                <input type="number" v-model.number="initialCols" min="1" max="20" class="form-control form-control-sm">
-            </div>
-            <div class="col-auto">
-                <button @click="initializeTable" class="btn btn-success btn-sm">Initialize Table</button>
-            </div>
-        </div>
-
-        <div class="d-flex flex-wrap gap-2 mb-3">
-            <button @click="undo" :disabled="!canUndo" class="btn btn-secondary btn-sm" title="Undo (Ctrl+Z)">↶ Undo</button>
-            <button @click="redo" :disabled="!canRedo" class="btn btn-secondary btn-sm" title="Redo (Ctrl+Y)">↷ Redo</button>
-            <button @click="toggleCellSelection" :class="cellSelectionMode ? 'btn btn-danger btn-sm' : 'btn btn-primary btn-sm'">
-                {{ cellSelectionMode ? 'Disable Cell Selection' : 'Enable Cell Selection' }}
-            </button>
-            <button @click="mergeCells" :disabled="!canMergeCells" class="btn btn-primary btn-sm">🔗 Merge Selected Cells</button>
-            <button @click="splitCell" class="btn btn-danger btn-sm" :disabled="!canSplitCell">✂️ Split Cell</button>
-            <button @click="clearTable" class="btn btn-danger btn-sm">🗑️ Clear Table</button>
-        </div>
-
-        <div v-if="cellSelectionMode" class="alert alert-info" role="alert">
-            ℹ️ <strong>Cell Selection Mode Active:</strong> Click cells to select. Hold Cmd (Mac) or Ctrl (Windows) while clicking to select multiple cells.
-        </div>
-        <div v-if="!cellSelectionMode && selectedCells.length > 0" class="alert alert-success" role="alert">
-            ℹ️ <strong>{{ selectedCells.length }} cell(s) selected</strong> via Cmd/Ctrl+Click. Click "Merge Selected Cells" to merge them.
-        </div>
-        <div v-if="!cellSelectionMode && canSplitCell" class="alert alert-warning" role="alert">
-            ℹ️ Click "Split Cell" to unmerge the selected merged cell.
-        </div>
-
-        <div class="table-responsive mt-3">
+            <div class="table-responsive mt-3">
             <table class="table table-bordered table-hover">
                 <thead class="table-primary">
                     <!-- Delete Column Row -->
@@ -416,13 +470,67 @@
             </table>
         </div>
 
-        <div class="border-top mt-4 pt-4">
-            <h3>Template Management</h3>
-            <div class="d-flex flex-wrap gap-2">
-                <button @click="exportTemplate" class="btn btn-success">💾 Export Template</button>
-                <button @click="triggerImportTemplate" class="btn btn-success">📂 Import Template</button>
+        <input type="file" ref="templateFileInput" @change="handleTemplateImport" accept="application/json,.json" style="display: none;">
+        </div>
+
+        <!-- Right Section: Controls -->
+        <div class="controls-section">
+            <div class="controls-panel">
+                <h5>🎛️ Controls</h5>
+                
+                <div class="control-section">
+                    <strong class="d-block mb-2">Table Size</strong>
+                    <div class="input-group input-group-sm mb-2">
+                        <span class="input-group-text">Rows</span>
+                        <input type="number" v-model.number="initialRows" min="1" max="50" class="form-control">
+                    </div>
+                    <div class="input-group input-group-sm mb-2">
+                        <span class="input-group-text">Cols</span>
+                        <input type="number" v-model.number="initialCols" min="1" max="20" class="form-control">
+                    </div>
+                    <button @click="initializeTable" class="btn btn-success btn-sm">Initialize Table</button>
+                </div>
+
+                <div class="control-section">
+                    <strong class="d-block mb-2">History</strong>
+                    <button @click="undo" :disabled="!canUndo" class="btn btn-secondary btn-sm" title="Undo (Ctrl+Z)">↶ Undo</button>
+                    <button @click="redo" :disabled="!canRedo" class="btn btn-secondary btn-sm" title="Redo (Ctrl+Y)">↷ Redo</button>
+                </div>
+
+                <div class="control-section">
+                    <strong class="d-block mb-2">Header Controls</strong>
+                    <p class="small text-muted mb-2">
+                        <strong>Tip:</strong> Cmd/Ctrl + Click to select headers
+                    </p>
+                    <button @click="toggleHeaderSelection" :class="headerSelectionMode ? 'btn btn-danger btn-sm' : 'btn btn-primary btn-sm'">
+                        {{ headerSelectionMode ? 'Disable Header Selection' : 'Enable Header Selection' }}
+                    </button>
+                    <button @click="mergeHeaderCells" :disabled="!canMergeHeaders" class="btn btn-primary btn-sm">Merge Headers</button>
+                    <button @click="splitHeaderCell" class="btn btn-warning btn-sm" :disabled="!canSplitHeader">Split Header</button>
+                    <div class="small text-muted mt-2">
+                        Header rows: <span class="badge bg-primary">{{ headerRows.length }}</span>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <strong class="d-block mb-2">Cell Controls</strong>
+                    <button @click="toggleCellSelection" :class="cellSelectionMode ? 'btn btn-danger btn-sm' : 'btn btn-primary btn-sm'">
+                        {{ cellSelectionMode ? 'Disable Cell Selection' : 'Enable Cell Selection' }}
+                    </button>
+                    <button @click="mergeCells" :disabled="!canMergeCells" class="btn btn-primary btn-sm">🔗 Merge Cells</button>
+                    <button @click="splitCell" class="btn btn-warning btn-sm" :disabled="!canSplitCell">✂️ Split Cell</button>
+                    <div v-if="selectedCells.length > 0" class="small text-success mt-2">
+                        {{ selectedCells.length }} cell(s) selected
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <strong class="d-block mb-2">Template</strong>
+                    <button @click="exportTemplate" class="btn btn-success btn-sm">💾 Export</button>
+                    <button @click="triggerImportTemplate" class="btn btn-primary btn-sm">📂 Import</button>
+                    <button @click="clearTable" class="btn btn-danger btn-sm">🗑️ Clear Table</button>
+                </div>
             </div>
-            <input type="file" ref="templateFileInput" @change="handleTemplateImport" accept="application/json,.json" style="display: none;">
         </div>
 
         <!-- Parameter Modal -->
@@ -481,7 +589,8 @@
                 history: [],
                 historyIndex: -1,
                 maxHistory: 50,
-                inputDebounceTimers: {}
+                inputDebounceTimers: {},
+                showFloatingControls: true
             },
             computed: {
                 canMergeHeaders() {
