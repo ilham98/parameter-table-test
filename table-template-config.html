@@ -160,8 +160,8 @@
         }
 
         .delete-col-btn {
-            width: 20px;
-            height: 20px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             color: white;
@@ -294,10 +294,12 @@
                             :key="'delete-' + colIndex"
                             v-if="!header.hidden"
                             class="action-cell">
-                            <div class="delete-col-btn" 
+                            <div class="d-flex justify-content-center">
+                                <div class="delete-col-btn" 
                                  @click="deleteColumn(colIndex)"
                                  title="Delete this column">
                                 ×
+                            </div>
                             </div>
                         </th>
                         <th class="table-secondary action-cell">
@@ -323,7 +325,7 @@
                                    placeholder="Enter header name" 
                                    class="form-control form-control-sm">
                         </th>
-                        <th class="table-secondary action-cell" v-if="rowIndex == 0 && rowIndex != headerRows.length - 1" rowspan="99">
+                        <th class="table-secondary action-cell" v-if="(rowIndex == 0 && rowIndex != headerRows.length - 1) || headerRows.length == 1" rowspan="99">
                             <div class="d-flex justify-content-center">
                                 <div class="add-col-btn" @click="addColumn">+</div>
                             </div>
@@ -389,7 +391,7 @@
                                 </button>
                             </div>
                         </td>
-                        <td class="table-secondary action-cell" v-if="rowIndex == 0 && rowIndex != headerRows.length - 1"  rowspan="99">
+                        <td class="table-secondary action-cell" v-if="(rowIndex == 0 && rowIndex != tableRows.length - 1) || tableRows.length == 1"  rowspan="99">
                             <div class="d-flex justify-content-center">
                                 <div class="add-col-btn" @click="addColumn">+</div>
                             </div>
