@@ -300,8 +300,8 @@
                                 ×
                             </div>
                         </th>
-                        <th class="table-secondary action-cell" :rowspan="headerRows.length + 1 + tableRows.length + 1">
-                            <div class="d-flex justify-content-center align-items-center h-100">
+                        <th class="table-secondary action-cell">
+                            <div class="d-flex justify-content-center">
                                 <div class="add-col-btn" @click="addColumn">+</div>
                             </div>
                         </th>
@@ -325,6 +325,11 @@
                         </th>
                         <th class="table-secondary action-cell">
                             <div class="d-flex justify-content-center">
+                                <div class="add-col-btn" @click="addColumn">+</div>
+                            </div>
+                        </th>
+                        <th class="table-secondary action-cell">
+                            <div class="d-flex justify-content-center">
                                 <button @click="deleteHeaderRow(rowIndex)" class="btn btn-danger btn-sm">Delete Row</button>
                             </div>
                         </th>
@@ -335,6 +340,11 @@
                         <th :colspan="headerRows[0].length" class="action-cell">
                             <div class="d-flex justify-content-center">
                                 <div class="add-header-row-btn" @click="addHeaderRow">+</div>
+                            </div>
+                        </th>
+                        <th class="table-secondary action-cell">
+                            <div class="d-flex justify-content-center">
+                                <div class="add-col-btn" @click="addColumn">+</div>
                             </div>
                         </th>
                         <th class="table-secondary action-cell"></th>
@@ -384,8 +394,8 @@
                                 </button>
                             </div>
                         </td>
-                        <td class="table-secondary action-cell" :rowspan="headerRows.length + 1 + tableRows.length + 1">
-                            <div class="d-flex justify-content-center align-items-center h-100">
+                        <td class="table-secondary action-cell">
+                            <div class="d-flex justify-content-center">
                                 <div class="add-col-btn" @click="addColumn">+</div>
                             </div>
                         </td>
@@ -394,7 +404,6 @@
                                 <button @click="deleteRow(rowIndex)" class="btn btn-danger btn-sm">Delete Row</button>
                             </div>
                         </td>
-                        
                     </tr>
                     
                     <!-- Add Row -->
@@ -402,6 +411,11 @@
                         <td :colspan="headerRows[0].length" class="action-cell">
                             <div class="d-flex justify-content-center">
                                 <div class="add-row-btn" @click="addRow">+</div>
+                            </div>
+                        </td>
+                        <td class="table-secondary action-cell">
+                            <div class="d-flex justify-content-center">
+                                <div class="add-col-btn" @click="addColumn">+</div>
                             </div>
                         </td>
                         <td class="table-secondary action-cell"></td>
